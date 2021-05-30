@@ -1,13 +1,15 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
+
+from .base import BaseModel
 
 
 # Shared properties
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
-    is_active: Optional[bool] = True
-    is_admin: Optional[bool] = False
+    is_active: bool = True
+    is_admin: bool = False
     is_superuser: bool = False
     full_name: Optional[str] = None
 
@@ -26,7 +28,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     id: Optional[int] = None
 
-    class Config:
+    class Config(BaseModel.Config):
         orm_mode = True
 
 

@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
 
+from app.schemas.base import BaseConfig
+
 
 class Settings(BaseSettings):
     API_PREFIX: str = "/api"
@@ -84,8 +86,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
 
-    class Config:
-        case_sensitive = True
+    class Config(BaseConfig):
+        pass
 
 
 settings = Settings()

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.crud import crud_user
 from app.db import base  # noqa: F401
-from app.schemas import user as user_schemas
+from app.schemas import schemas_user
 
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
@@ -19,7 +19,7 @@ def init_db(db: Session) -> None:
 
     user = crud_user.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if user is None:
-        user_in = user_schemas.UserCreate(
+        user_in = schemas_user.UserCreate(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_admin=True,

@@ -8,17 +8,17 @@ from app.core import security
 from app.core.config import settings
 from app.crud import crud_user
 from app.routes.api import deps
-from app.schemas import token as token_schemas
+from app.schemas import schemas_token
 
 
 router = APIRouter()
 
 
-@router.post("/auth/access-token", response_model=token_schemas.Token)
+@router.post("/auth/access-token", response_model=schemas_token.Token)
 def get_access_token(
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestFormStrict = Depends(),
-) -> token_schemas.Token:
+) -> schemas_token.Token:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
@@ -38,9 +38,7 @@ def get_access_token(
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    return token_schemas.Token(
-        access_token=security.create_access_token(
-            user.id, expires_delta=access_token_expires
-        ),
+    return schemas_token.Token(
+        access_token=security.create_token(user.id, expires_delta=access_token_expires),
         token_type="bearer",
     )

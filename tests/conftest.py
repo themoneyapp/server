@@ -13,14 +13,14 @@ from tests.utils.utils import get_superuser_token_headers
 
 
 @pytest.fixture(scope="session")
-def db() -> Generator:
+def db() -> Generator[Session, None, None]:
     yield SessionLocal()
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator:
+def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
-        yield c
+        yield c  # type: ignore
 
 
 @pytest.fixture(scope="module")
