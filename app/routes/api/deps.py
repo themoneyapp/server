@@ -2,12 +2,10 @@ from typing import Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from app.core import security
 from app.core.config import settings
+from app.core.security import parse_token
 from app.crud import crud_user
 from app.db.session import SessionLocal
 from app.models import models_user
@@ -30,7 +28,7 @@ def get_db() -> Generator[Session, None, None]:
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> models_user.User:
-    token_data = security.parse_token(token)
+    token_data = parse_token(token)
     if token_data is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

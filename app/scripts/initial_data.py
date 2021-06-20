@@ -1,7 +1,7 @@
 import logging
 
-from .init_db import init_db
 from app.db.session import SessionLocal
+from app.scripts.init_db import init_db
 
 
 logging.basicConfig(level=logging.INFO)

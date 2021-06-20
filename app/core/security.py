@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Optional
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -15,9 +15,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
 
-def create_token(
-    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
-) -> str:
+def create_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
     now = datetime.utcnow()
     if expires_delta is not None:
         expire = now + expires_delta
