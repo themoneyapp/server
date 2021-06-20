@@ -47,7 +47,7 @@ def create_user(
     db: Session = Depends(deps.get_db),
     user_in: schemas_user.UserCreate,
     current_user: models_user.User = Depends(deps.get_current_active_superuser),
-) -> Any:
+) -> models_user.User:
     """
     Create new user.
     """
@@ -71,7 +71,6 @@ def update_user_me(
     db: Session = Depends(deps.get_db),
     password: str = Body(None),
     full_name: str = Body(None),
-    email: EmailStr = Body(None),
     current_user: models_user.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -83,8 +82,6 @@ def update_user_me(
         user_in.password = password
     if full_name is not None:
         user_in.full_name = full_name
-    if email is not None:
-        user_in.email = email
     user = crud_user.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
@@ -120,7 +117,7 @@ def create_user_open(
 
 @router.get("/{user_id}", response_model=schemas_user.User)
 def read_user_by_id(
-    user_id: int,
+    user_id: str,
     current_user: models_user.User = Depends(deps.get_current_active_user),
     db: Session = Depends(deps.get_db),
 ) -> Any:
@@ -128,13 +125,12 @@ def read_user_by_id(
     Get a specific user by id.
     """
     user = crud_user.user.get(db, id=user_id)
-    if user == current_user:
+    if user == current_user or crud_user.user.is_superuser(current_user):
         return user
-    if not crud_user.user.is_superuser(current_user):
-        raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
-        )
-    return user
+
+    raise HTTPException(
+        status_code=400, detail="The user doesn't have enough privileges"
+    )
 
 
 @router.put("/{user_id}", response_model=schemas_user.User)

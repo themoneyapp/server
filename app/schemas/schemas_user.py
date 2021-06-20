@@ -7,11 +7,11 @@ from .base import BaseModel
 
 # Shared properties
 class UserBase(BaseModel):
+    full_name: str
     email: Optional[EmailStr] = None
     is_active: bool = True
     is_admin: bool = False
     is_superuser: bool = False
-    full_name: Optional[str] = None
 
 
 # Properties to receive via API on creation
@@ -21,12 +21,13 @@ class UserCreate(UserBase):
 
 
 # Properties to receive via API on update
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
     password: Optional[str] = None
 
 
 class UserInDBBase(UserBase):
-    id: Optional[int] = None
+    id: str
 
     class Config(BaseModel.Config):
         orm_mode = True

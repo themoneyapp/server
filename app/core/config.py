@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     def API_V1_PATH(self) -> str:
         return f"{self.API_PREFIX}{self.API_V1_STR}"
 
+    # Application Settings
+    PROJECT_NAME: str
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
     SERVER_HOST: AnyHttpUrl
     # CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
-    # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
+    # "http://localhost:8080", "http://demo.example.com"]'
     CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @validator("CORS_ORIGINS", pre=True)
@@ -34,8 +36,7 @@ class Settings(BaseSettings):
 
         raise ValueError(v)
 
-    PROJECT_NAME: str
-
+    # Database Settings
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -55,6 +56,7 @@ class Settings(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
+    # SMTP settings
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
     SMTP_HOST: Optional[str] = None
@@ -66,7 +68,8 @@ class Settings(BaseSettings):
     @validator("EMAILS_FROM_NAME")
     def get_project_name(cls, v: Optional[str], values: Dict[str, Any]) -> str:
         if not v:
-            return values["PROJECT_NAME"]
+            return values["PROJECT_NAME"]  # type: ignore
+
         return v
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
@@ -81,9 +84,6 @@ class Settings(BaseSettings):
             and values.get("EMAILS_FROM_EMAIL")
         )
 
-    EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
 
     class Config(BaseConfig):

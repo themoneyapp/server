@@ -4,10 +4,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.security import get_password_hash
 from app.crud import crud_user
 from app.models import models_user
 from app.schemas.schemas_user import UserCreate, UserUpdate
 
+from tests import constants
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -23,11 +25,37 @@ def user_authentication_headers(
     return headers
 
 
-def create_random_user(db: Session) -> models_user.User:
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=email, password=password)
-    user = crud_user.user.create(db=db, obj_in=user_in)
+def create_random_user(
+    db: Session, email: str = random_email(), password: str = random_lower_string()
+) -> models_user.User:
+    user = crud_user.user.get_by_email(db, email=email)
+    if user is None:
+        user_in = UserCreate(
+            email=email,
+            password=password,
+            full_name="Test User",
+        )
+        user = crud_user.user.create(db=db, obj_in=user_in)
+    else:
+        user_updata_in = UserUpdate(password=password)
+        user = crud_user.user.update(db, db_obj=user, obj_in=user_updata_in)
+
+        # user.hashed_password = get_password_hash(password)
+    return user
+
+
+def create_superuser(db: Session) -> models_user.User:
+    user = crud_user.user.get_by_email(db, email=constants.TEST_SUPERUSER_EMAIL)
+    if user is None:
+        user_in = UserCreate(
+            email=constants.TEST_SUPERUSER_EMAIL,
+            password=constants.TEST_SUPERUSER_PASSWORD,
+            full_name="Test Superuser",
+            is_admin=True,
+            is_superuser=True,
+        )
+        user = crud_user.user.create(db, obj_in=user_in)  # noqa: F841
+
     return user
 
 
@@ -40,13 +68,11 @@ def authentication_token_from_email(
     If the user doesn't exist it is created first.
     """
     password = random_lower_string()
-    user = crud_user.user.get_by_email(db, email=email)
-    if not user:
-        user_in_create = UserCreate(email=email, password=password)
-        crud_user.user.create(db, obj_in=user_in_create)
 
+    if email == constants.TEST_SUPERUSER_EMAIL:
+        create_superuser(db)
+        password = constants.TEST_SUPERUSER_PASSWORD
     else:
-        user_in_update = UserUpdate(password=password)
-        user = crud_user.user.update(db, db_obj=user, obj_in=user_in_update)
+        create_random_user(db, email=email, password=password)
 
     return user_authentication_headers(client=client, email=email, password=password)
