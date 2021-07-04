@@ -15,13 +15,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
 
-def create_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
-    now = datetime.utcnow()
-    if expires_delta is not None:
-        expire = now + expires_delta
+def create_token(subject: str, expires_delta: timedelta) -> str:
+    """Create a JWT token for the given `subject`.
 
-    else:
-        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    Args:
+        subject (str): Subject of the token.
+        expires_delta (timedelta): Token expiry timedelta
+
+    Returns:
+        str: A JWT string
+    """
+    now = datetime.utcnow()
+    expire = now + expires_delta
 
     expire_ts = int(expire.timestamp())
     now_ts = int(now.timestamp())
@@ -31,6 +36,14 @@ def create_token(subject: str, expires_delta: Optional[timedelta] = None) -> str
 
 
 def parse_token(token: str) -> Optional[TokenPayload]:
+    """Parse a JWT token.
+
+    Args:
+        token (str): JWT token as string.
+
+    Returns:
+        Optional[TokenPayload]: parsed Token payload
+    """
     try:
         token_data: TokenPayload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[ALGORITHM]
@@ -42,6 +55,15 @@ def parse_token(token: str) -> Optional[TokenPayload]:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify plain text password against hashed password in db.
+
+    Args:
+        plain_password (str): Plain text password to check.
+        hashed_password (str): Hashed password to checked with.
+
+    Returns:
+        bool: Whether hash of plain text matches with the hashed password.
+    """
     return pwd_context.verify(plain_password, hashed_password)  # type: ignore
 
 
